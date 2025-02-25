@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.jetbrains.kotlin.serialization) // Füge diese Zeile hinzu, falls nicht vorhanden
+
 }
 
 android {
@@ -27,13 +30,16 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         compose = true
     }
@@ -41,14 +47,51 @@ android {
 
 dependencies {
 
+    // Core Jetpack
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+
+    // Jetpack Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    // Jetpack Compose Navigation
+    implementation(libs.androidx.navigation.compose)
+
+    // Retrofit & JSON Konverter
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+
+    // Coroutines für Kotlin Flow
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+
+    // Lifecycle & ViewModel für StateFlow
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
+    // Room (mit KSP)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler.get())
+    implementation(libs.androidx.room.ktx)
+
+    //Navigation
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.okhttp)
+
+    //Coil
+    implementation(libs.coil.compose)
+
+
+
+
+    // Test Dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
