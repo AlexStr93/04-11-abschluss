@@ -1,9 +1,9 @@
-package com.example.a04_11_abschluss.ui.screens
+package com.example.a04_11_abschluss
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -15,7 +15,7 @@ import com.example.a04_11_abschluss.model.Fruit
 fun FruitDetailScreen(fruit: Fruit) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(text = fruit.name) })
+            TopAppBar(title = { Text(fruit.name) })
         }
     ) { paddingValues ->
         Column(
@@ -30,14 +30,17 @@ fun FruitDetailScreen(fruit: Fruit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Image(
-                painter = rememberAsyncImagePainter(fruit.filename),
-                contentDescription = fruit.name,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(250.dp),
-                contentScale = ContentScale.Crop
-            )
+            // Nur anzeigen, wenn eine Bild-URL vorhanden ist
+            if (fruit.filename.isNotBlank()) {
+                Image(
+                    painter = rememberAsyncImagePainter(fruit.filename),
+                    contentDescription = fruit.name,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp),
+                    contentScale = ContentScale.Crop
+                )
+            }
         }
     }
 }
