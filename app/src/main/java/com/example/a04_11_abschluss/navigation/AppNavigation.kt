@@ -2,10 +2,13 @@ package com.example.a04_11_abschluss.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
@@ -14,31 +17,42 @@ import com.example.a04_11_abschluss.FavoritesScreen
 import com.example.a04_11_abschluss.FruitDetailScreen
 import com.example.a04_11_abschluss.data.Route
 import com.example.a04_11_abschluss.model.Fruit
+import com.example.a04_11_abschluss.viewModel.FavoritesViewModel
 import com.example.a04_11_abschluss.viewModel.OnePieceViewModel
 
 @Composable
-fun AppNavigation(viewModel: OnePieceViewModel) {
+fun AppNavigation(
+    viewModel: OnePieceViewModel,
+    favoritesViewModel: FavoritesViewModel = viewModel() // ViewModel für Favoriten
+) {
     val navController = rememberNavController()
     var selectedFruit by remember { mutableStateOf<Fruit?>(null) }
 
     Scaffold(
-        topBar = { TopBar() },
+        topBar = { TopBar(navController) },
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Route.Home.route,
-            modifier = androidx.compose.ui.Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding)
         ) {
+            // Home Screen mit Favoriten-Handling
             composable(Route.Home.route) {
-                CharacterList(viewModel, onCharacterClick = { character ->
-                    selectedFruit = character.fruit
-                    navController.navigate(Route.FruitDetail.route)
-                })
+                CharacterList(
+                    viewModel = viewModel,
+                    favoritesViewModel = favoritesViewModel,
+                    onCharacterClick = { character ->
+                        selectedFruit = character.fruit
+                        navController.navigate(Route.FruitDetail.route)
+                    }
+                )
             }
+            // Favoriten Screen bekommt jetzt FavoritenViewModel
             composable(Route.Favorites.route) {
-                FavoritesScreen(viewModel)
+                FavoritesScreen(favoritesViewModel)
             }
+            // Detail Screen bleibt unverändert
             composable(Route.FruitDetail.route) {
                 selectedFruit?.let { fruit ->
                     FruitDetailScreen(fruit)
@@ -50,9 +64,18 @@ fun AppNavigation(viewModel: OnePieceViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar() {
+fun TopBar(navController: NavHostController) {
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+
     CenterAlignedTopAppBar(
         title = { Text(text = "One Piece") },
+        navigationIcon = {
+            if (currentRoute == Route.FruitDetail.route) {
+                IconButton(onClick = { navController.navigate(Route.Home.route) }) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                }
+            }
+        },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
     )
 }

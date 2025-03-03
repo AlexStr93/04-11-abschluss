@@ -9,8 +9,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -20,30 +25,77 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.a04_11_abschluss.model.Character
+import com.example.a04_11_abschluss.model.FavoriteCharacter
+import com.example.a04_11_abschluss.viewModel.FavoritesViewModel
 import com.example.a04_11_abschluss.viewModel.OnePieceViewModel
 
 @Composable
-fun CharacterList(viewModel: OnePieceViewModel, onCharacterClick: (Character) -> Unit) {
+fun CharacterList(
+    viewModel: OnePieceViewModel,
+    favoritesViewModel: FavoritesViewModel,
+    onCharacterClick: (Character) -> Unit
+) {
     val characters by viewModel.characters.collectAsState()
+    val favoriteCharacters by favoritesViewModel.favoriteCharacters.collectAsState(initial = emptyList())
 
-    Scaffold { paddingValues ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(8.dp)
         ) {
-            items(characters) { character ->
-                CharacterCard(character) {
-                    onCharacterClick(character)
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp)
+            ) {
+                items(characters) { character ->
+                    val isFavorite = favoriteCharacters.any { it.id == character.id }
+                    CharacterCard(
+                        character = character,
+                        isFavorite = isFavorite,
+                        onCharacterClick = { onCharacterClick(character) },
+                        onFavoriteToggle = { selectedCharacter ->
+                            if (isFavorite) {
+                                selectedCharacter.toFavoriteCharacter()
+                                    ?.let { favoritesViewModel.removeFavorite(it) }
+                            } else {
+                                selectedCharacter.toFavoriteCharacter()
+                                    ?.let { favoritesViewModel.addFavorite(it) }
+                            }
+                        }
+                    )
                 }
+            }
+        }
+    }
+
+
+// Erweiterungsfunktion für Konvertierung
+fun Character.toFavoriteCharacter() = this.age?.let {
+    this.size?.let { it1 ->
+        this.bounty?.let { it2 ->
+            this.job?.let { it3 ->
+                FavoriteCharacter(
+                    id = this.id,
+                    name = this.name,
+                    size = it1,
+                    age = it,
+                    bounty = it2,
+                    job = it3,
+                    crew = this.crew?.name,
+                    fruit = this.fruit?.name
+                )
             }
         }
     }
 }
 
 @Composable
-fun CharacterCard(character: Character, onCharacterClick: (Character) -> Unit) {
+fun CharacterCard(
+    character: Character,
+    isFavorite: Boolean,
+    onCharacterClick: (Character) -> Unit,
+    onFavoriteToggle: (Character) -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -64,8 +116,16 @@ fun CharacterCard(character: Character, onCharacterClick: (Character) -> Unit) {
 
             character.fruit?.let {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Teufelsfrucht: ${it.name} (${it.type})", style = MaterialTheme.typography.bodyMedium)
-                Text(text = it.description, style = MaterialTheme.typography.bodySmall)
+                Text(text = "Teufelsfrucht: ${it.name}", style = MaterialTheme.typography.bodyMedium)
+            }
+
+            // Favoriten-Button
+            IconButton(onClick = { onFavoriteToggle(character) }) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    contentDescription = "Favorit",
+                    tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                )
             }
         }
     }
