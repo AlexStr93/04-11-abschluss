@@ -12,7 +12,7 @@ import com.example.a04_11_abschluss.model.Fruit
 
 @Composable
 fun FruitDetailScreen(fruit: Fruit) {
-    Scaffold { paddingValues -> // Scaffold bleibt für Padding und Struktur erhalten
+    Scaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

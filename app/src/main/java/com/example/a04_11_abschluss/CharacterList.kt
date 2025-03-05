@@ -17,8 +17,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,23 +38,31 @@ fun CharacterList(
 ) {
     val characters by viewModel.characters.collectAsState()
     val favoriteCharacters by favoritesViewModel.favoriteCharacters.collectAsState(initial = emptyList())
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val favoriteErrorMessage by favoritesViewModel.errorMessage.collectAsState()
+    val successMessage by favoritesViewModel.successMessage.collectAsState() // Erfolgsnachricht überwachen
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 8.dp)
-            ) {
-                items(characters) { character ->
-                    val isFavorite = favoriteCharacters.any { it.id == character.id }
-                    CharacterCard(
-                        character = character,
-                        isFavorite = isFavorite,
-                        onCharacterClick = { onCharacterClick(character) },
-                        onFavoriteToggle = { selectedCharacter ->
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+    ) {
+        // Fehler Snackbar anzeigen, falls ein Fehler existiert
+        ErrorSnackbar(errorMessage, onDismiss = { viewModel.clearError() })
+        ErrorSnackbar(favoriteErrorMessage, onDismiss = { favoritesViewModel.clearError() })
+
+        // Erfolgsnachricht anzeigen
+        SuccessSnackbar(successMessage, onDismiss = { favoritesViewModel.clearSuccess() })
+
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(characters) { character ->
+                val isFavorite = favoriteCharacters.any { it.id == character.id }
+                CharacterCard(
+                    character = character,
+                    isFavorite = isFavorite,
+                    onCharacterClick = { onCharacterClick(character) },
+                    onFavoriteToggle = { selectedCharacter ->
+                        try {
                             if (isFavorite) {
                                 selectedCharacter.toFavoriteCharacter()
                                     ?.let { favoritesViewModel.removeFavorite(it) }
@@ -61,13 +70,46 @@ fun CharacterList(
                                 selectedCharacter.toFavoriteCharacter()
                                     ?.let { favoritesViewModel.addFavorite(it) }
                             }
+                        } catch (e: Exception) {
+                            favoritesViewModel.clearError()
                         }
-                    )
-                }
+                    }
+                )
             }
         }
     }
+}
 
+@Composable
+fun ErrorSnackbar(errorMessage: String?, onDismiss: () -> Unit) {
+    if (errorMessage != null) {
+        Snackbar(
+            action = {
+                TextButton(onClick = onDismiss) {
+                    Text("OK")
+                }
+            },
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text(text = errorMessage)
+        }
+    }
+}
+@Composable
+fun SuccessSnackbar(successMessage: String?, onDismiss: () -> Unit) {
+    if (successMessage != null) {
+        Snackbar(
+            action = {
+                TextButton(onClick = onDismiss) {
+                    Text("OK")
+                }
+            },
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text(text = successMessage)
+        }
+    }
+}
 
 // Erweiterungsfunktion für Konvertierung
 fun Character.toFavoriteCharacter() = this.age?.let {

@@ -19,6 +19,10 @@ class OnePieceViewModel : ViewModel() {
     private val _fruits = MutableStateFlow<List<Fruit>>(emptyList())
     val fruits: StateFlow<List<Fruit>> = _fruits
 
+    // Fehlerstatus
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
     init {
         fetchCharacters()
         fetchFruits()
@@ -26,17 +30,32 @@ class OnePieceViewModel : ViewModel() {
 
     private fun fetchCharacters() {
         viewModelScope.launch {
-            repository.getCharacters().collectLatest { characterList ->
-                _characters.value = characterList
+            try {
+                repository.getCharacters().collectLatest { characterList ->
+                    _characters.value = characterList
+                    _errorMessage.value = null // Erfolgreich -> Kein Fehler
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Fehler beim Abrufen der Charaktere: ${e.localizedMessage}"
             }
         }
     }
 
     private fun fetchFruits() {
         viewModelScope.launch {
-            repository.getFruits().collectLatest { fruitList ->
-                _fruits.value = fruitList
+            try {
+                repository.getFruits().collectLatest { fruitList ->
+                    _fruits.value = fruitList
+                    _errorMessage.value = null // Erfolgreich -> Kein Fehler
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = "Fehler beim Abrufen der Teufelsfrüchte: ${e.localizedMessage}"
             }
         }
+    }
+
+    // Methode zum Löschen der Fehlermeldung
+    fun clearError() {
+        _errorMessage.value = null
     }
 }
