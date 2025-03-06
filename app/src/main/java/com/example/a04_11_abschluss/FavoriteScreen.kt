@@ -2,9 +2,13 @@ package com.example.a04_11_abschluss
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -14,34 +18,58 @@ import com.example.a04_11_abschluss.viewModel.FavoritesViewModel
 
 @Composable
 fun FavoritesScreen(viewModel: FavoritesViewModel) {
-    val favorites by viewModel.favoriteCharacters.collectAsState(initial = emptyList()) // Favoriten aus Room abrufen
+    val favorites by viewModel.favoriteCharacters.collectAsState(initial = emptyList())
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var characterToDelete by remember { mutableStateOf<FavoriteCharacter?>(null) }
+    var isGridView by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Favoriten",
-            style = MaterialTheme.typography.headlineMedium
-        )
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = { isGridView = !isGridView }) {
+                Icon(
+                    imageVector = if (isGridView) Icons.AutoMirrored.Filled.List else Icons.Filled.GridView,
+                    contentDescription = "Ansicht wechseln"
+                )
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        if (favorites.isEmpty()) {
-            Text(text = "Keine Favoriten gespeichert", style = MaterialTheme.typography.bodyMedium)
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(favorites) { character ->
-                    FavoriteCharacterCard(character, onDeleteClick = {
-                        characterToDelete = character
-                        showDeleteDialog = true // Bestätigungsdialog anzeigen
-                    })
+            if (favorites.isEmpty()) {
+                Text(text = "Keine Favoriten gespeichert", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                if (isGridView) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(4.dp)
+                    ) {
+                        items(favorites.size) { index ->
+                            FavoriteCharacterCard(favorites[index], onDeleteClick = {
+                                characterToDelete = favorites[index]
+                                showDeleteDialog = true
+                            })
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(favorites) { character ->
+                            FavoriteCharacterCard(character, onDeleteClick = {
+                                characterToDelete = character
+                                showDeleteDialog = true // Bestätigungsdialog anzeigen
+                            })
+                        }
+                    }
                 }
             }
         }
@@ -77,7 +105,7 @@ fun FavoriteCharacterCard(character: FavoriteCharacter, onDeleteClick: () -> Uni
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(8.dp),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(

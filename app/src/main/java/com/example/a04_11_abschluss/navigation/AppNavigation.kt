@@ -23,7 +23,7 @@ import com.example.a04_11_abschluss.viewModel.OnePieceViewModel
 @Composable
 fun AppNavigation(
     viewModel: OnePieceViewModel,
-    favoritesViewModel: FavoritesViewModel = viewModel() // ViewModel für Favoriten
+    favoritesViewModel: FavoritesViewModel = viewModel()
 ) {
     val navController = rememberNavController()
     var selectedFruit by remember { mutableStateOf<Fruit?>(null) }
@@ -37,7 +37,6 @@ fun AppNavigation(
             startDestination = Route.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            // Home Screen mit Favoriten-Handling
             composable(Route.Home.route) {
                 CharacterList(
                     viewModel = viewModel,
@@ -48,11 +47,9 @@ fun AppNavigation(
                     }
                 )
             }
-            // Favoriten Screen bekommt jetzt FavoritenViewModel
             composable(Route.Favorites.route) {
                 FavoritesScreen(favoritesViewModel)
             }
-            // Detail Screen bleibt unverändert
             composable(Route.FruitDetail.route) {
                 selectedFruit?.let { fruit ->
                     FruitDetailScreen(fruit)
@@ -67,12 +64,19 @@ fun AppNavigation(
 fun TopBar(navController: NavHostController) {
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
+    val title = when (currentRoute) {
+        Route.Home.route -> "One Piece"
+        Route.Favorites.route -> "Favoriten"
+        Route.FruitDetail.route -> "Teufelsfrüchte"
+        else -> "One Piece"
+    }
+
     CenterAlignedTopAppBar(
-        title = { Text(text = "One Piece") },
+        title = { Text(text = title) },
         navigationIcon = {
             if (currentRoute == Route.FruitDetail.route) {
-                IconButton(onClick = { navController.navigate(Route.Home.route) }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
                 }
             }
         },

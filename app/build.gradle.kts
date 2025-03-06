@@ -83,13 +83,15 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
 
+    //OKHTTP
     implementation(libs.okhttp)
 
     //Coil
     implementation(libs.coil.compose)
 
-
-
+    //Icons
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.material3)
 
     // Test Dependencies
     testImplementation(libs.junit)
