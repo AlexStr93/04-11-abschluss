@@ -66,7 +66,7 @@ fun FavoritesScreen(viewModel: FavoritesViewModel) {
                         items(favorites) { character ->
                             FavoriteCharacterCard(character, onDeleteClick = {
                                 characterToDelete = character
-                                showDeleteDialog = true // Bestätigungsdialog anzeigen
+                                showDeleteDialog = true
                             })
                         }
                     }
