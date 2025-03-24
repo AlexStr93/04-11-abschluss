@@ -1,7 +1,6 @@
 package com.example.a04_11_abschluss
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
@@ -26,13 +26,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.example.a04_11_abschluss.model.Character
@@ -53,80 +52,65 @@ fun CharacterList(
     val successMessage by favoritesViewModel.successMessage.collectAsState()
 
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-    var showSearch by remember { mutableStateOf(false) }
-    var lastScrollOffset by remember { mutableFloatStateOf(0f) }
+    val state = rememberLazyListState()
+    val firstItemVisible by remember {
+        derivedStateOf {
+            state.firstVisibleItemIndex == 0
+        }
+    }
 
     // Gefilterte Charakterliste basierend auf der Suche
     val filteredCharacters = characters.filter {
         it.name.contains(searchQuery.text, ignoreCase = true)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp)
-            .pointerInput(Unit) {
-                detectVerticalDragGestures { change, _ ->
-                    val currentOffset = change.position.y
-                    if (currentOffset < lastScrollOffset) {
-                        // Nach unten gescrollt → Suchleiste anzeigen
-                        showSearch = true
-                    } else if (currentOffset > lastScrollOffset) {
-                        // Nach oben gescrollt → Suchleiste ausblenden
-                        showSearch = false
-                    }
-                    lastScrollOffset = currentOffset
-                }
-            }
-    ) {
-        // Suchleiste nur anzeigen, wenn sie aktiviert wurde
-        if (showSearch) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                label = { Text("Charakter suchen...") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Suchen"
-                    )
-                },
-                singleLine = true
-            )
-        }
-
-        // Fehler-Snackbar
-        ErrorSnackbar(errorMessage, onDismiss = { viewModel.clearError() })
-        ErrorSnackbar(favoriteErrorMessage, onDismiss = { favoritesViewModel.clearError() })
-
-        // Erfolgsnachricht
-        SuccessSnackbar(successMessage, onDismiss = { favoritesViewModel.clearSuccess() })
-
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(filteredCharacters) { character ->
-                val isFavorite = favoriteCharacters.any { it.id == character.id }
-                CharacterCard(
-                    character = character,
-                    isFavorite = isFavorite,
-                    onCharacterClick = { onCharacterClick(character) },
-                    onFavoriteToggle = { selectedCharacter ->
-                        try {
-                            if (isFavorite) {
-                                selectedCharacter.toFavoriteCharacter()
-                                    ?.let { favoritesViewModel.removeFavorite(it) }
-                            } else {
-                                selectedCharacter.toFavoriteCharacter()
-                                    ?.let { favoritesViewModel.addFavorite(it) }
-                            }
-                        } catch (e: Exception) {
-                            favoritesViewModel.clearError()
-                        }
-                    }
+    // Suchleiste nur anzeigen, wenn sie aktiviert wurde
+    if (firstItemVisible) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            label = { Text("Charakter suchen...") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Suchen"
                 )
-            }
+            },
+            singleLine = true
+        )
+    }
+
+    // Fehler-Snackbar
+    ErrorSnackbar(errorMessage, onDismiss = { viewModel.clearError() })
+    ErrorSnackbar(favoriteErrorMessage, onDismiss = { favoritesViewModel.clearError() })
+
+    // Erfolgsnachricht
+    SuccessSnackbar(successMessage, onDismiss = { favoritesViewModel.clearSuccess() })
+
+    LazyColumn(state = state, modifier = Modifier.fillMaxSize()) {
+        items(filteredCharacters) { character ->
+            val isFavorite = favoriteCharacters.any { it.id == character.id }
+            CharacterCard(
+                character = character,
+                isFavorite = isFavorite,
+                onCharacterClick = { onCharacterClick(character) },
+                onFavoriteToggle = { selectedCharacter ->
+                    try {
+                        if (isFavorite) {
+                            selectedCharacter.toFavoriteCharacter()
+                                ?.let { favoritesViewModel.removeFavorite(it) }
+                        } else {
+                            selectedCharacter.toFavoriteCharacter()
+                                ?.let { favoritesViewModel.addFavorite(it) }
+                        }
+                    } catch (e: Exception) {
+                        favoritesViewModel.clearError()
+                    }
+                }
+            )
         }
     }
 }
