@@ -20,7 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,7 +43,6 @@ import androidx.compose.ui.unit.sp
 import com.example.a04_11_abschluss.model.FavoriteCharacter
 import com.example.a04_11_abschluss.viewModel.FavoritesViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(viewModel: FavoritesViewModel) {
     val favorites by viewModel.favoriteCharacters.collectAsState(initial = emptyList())
@@ -71,7 +69,7 @@ fun FavoritesScreen(viewModel: FavoritesViewModel) {
 //                    )
                     Icon(
                         painter = painterResource(
-                            id = if (isGridView) R.drawable.strohhut_list else R.drawable.strohhut_grid
+                            id = if (isGridView) R.drawable.strohhut_icon else R.drawable.strohhut_icon
                         ),
                         contentDescription = "Ansicht wechseln",
                         modifier = Modifier.size(28.dp)
