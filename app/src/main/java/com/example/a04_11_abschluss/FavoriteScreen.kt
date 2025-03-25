@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,41 +48,34 @@ fun FavoritesScreen(viewModel: FavoritesViewModel) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var characterToDelete by remember { mutableStateOf<FavoriteCharacter?>(null) }
     var isGridView by remember { mutableStateOf(false) }
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Hintergrundbild
-        Image(
-            painter = painterResource(id = R.drawable.onepiece_bg),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-        Scaffold(
-            containerColor = Color.Transparent,
-            floatingActionButton = {
-                FloatingActionButton(onClick = { isGridView = !isGridView }) {
-//                    Icon(
-//                        imageVector = if (isGridView) Icons.Default.GridView else Icons.Default.ViewList,
-//                        contentDescription = "Ansicht wechseln"
-//                    )
-                    Icon(
-                        painter = painterResource(
-                            id = if (isGridView) R.drawable.strohhut_icon else R.drawable.strohhut_icon
-                        ),
-                        contentDescription = "Ansicht wechseln",
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Transparent,
+        floatingActionButton = {
+            FloatingActionButton(onClick = { isGridView = !isGridView }) {
+                Icon(
+                    painter = painterResource(
+                        id = if (isGridView) R.drawable.strohhut_icon_list else R.drawable.strohhut_list
+                    ),
+                    contentDescription = "Ansicht wechseln",
+                    modifier = Modifier.size(28.dp)
+                )
             }
-        ) { paddingValues ->
+        }
+    ) { paddingValues ->
+        Box {
+            Image(
+                painter = painterResource(id = R.drawable.onepiece_bg),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
                     .padding(16.dp)
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
                 if (favorites.isEmpty()) {
                     Text(
                         text = "Keine Favoriten gespeichert",
@@ -94,24 +86,37 @@ fun FavoritesScreen(viewModel: FavoritesViewModel) {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(8.dp)
+                            contentPadding = PaddingValues(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             items(favorites.size) { index ->
-                                FavoriteCharacterCard(favorites[index], onDeleteClick = {
-                                    characterToDelete = favorites[index]
-                                    showDeleteDialog = true
-                                })
+                                FavoriteCharacterCard(
+                                    character = favorites[index],
+                                    onDeleteClick = {
+                                        characterToDelete = favorites[index]
+                                        showDeleteDialog = true
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(160.dp) // Einheitliche Höhe für alle Cards
+                                )
                             }
                         }
                     } else {
                         LazyColumn(
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp), // Abstand zwischen Items
+                            contentPadding = PaddingValues(vertical = 8.dp)    // Abstand oben und unten
                         ) {
                             items(favorites) { character ->
-                                FavoriteCharacterCard(character, onDeleteClick = {
-                                    characterToDelete = character
-                                    showDeleteDialog = true
-                                })
+                                FavoriteCharacterCard(
+                                    character = character,
+                                    onDeleteClick = {
+                                        characterToDelete = character
+                                        showDeleteDialog = true
+                                    }
+                                )
                             }
                         }
                     }
@@ -142,25 +147,30 @@ fun FavoritesScreen(viewModel: FavoritesViewModel) {
         }
     }
 }
+
 @Composable
-fun FavoriteCharacterCard(character: FavoriteCharacter, onDeleteClick: () -> Unit) {
+fun FavoriteCharacterCard(
+    character: FavoriteCharacter,
+    onDeleteClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3C7)),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(8.dp)
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFBE9A7))
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .fillMaxSize()
+                .padding(16.dp), // Innenabstand bleibt bestehen für Layout
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
-                    text = " ${character.name}",
+                    text = character.name,
                     style = MaterialTheme.typography.headlineSmall.copy(color = Color(0xFF6D4C41))
                 )
                 character.fruit?.let {
@@ -180,29 +190,3 @@ fun FavoriteCharacterCard(character: FavoriteCharacter, onDeleteClick: () -> Uni
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
