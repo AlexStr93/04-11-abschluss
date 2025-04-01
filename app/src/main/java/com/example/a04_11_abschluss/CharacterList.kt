@@ -63,12 +63,6 @@ fun CharacterList(
         derivedStateOf { state.firstVisibleItemIndex == 0 }
     }
     Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            painter = painterResource(id = R.drawable.onepiece_bg),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
         Column(modifier = Modifier.fillMaxSize()) {
             val filteredCharacters = characters.filter {
                 it.name.contains(searchQuery.text, ignoreCase = true)
@@ -206,15 +200,3 @@ fun CharacterCard(
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-

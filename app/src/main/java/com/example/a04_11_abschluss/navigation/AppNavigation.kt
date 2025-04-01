@@ -1,5 +1,9 @@
 package com.example.a04_11_abschluss.navigation
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -8,6 +12,9 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -15,6 +22,7 @@ import androidx.navigation.compose.*
 import com.example.a04_11_abschluss.CharacterList
 import com.example.a04_11_abschluss.FavoritesScreen
 import com.example.a04_11_abschluss.FruitDetailScreen
+import com.example.a04_11_abschluss.R
 import com.example.a04_11_abschluss.data.Route
 import com.example.a04_11_abschluss.model.Fruit
 import com.example.a04_11_abschluss.viewModel.FavoritesViewModel
@@ -29,30 +37,42 @@ fun AppNavigation(
     var selectedFruit by remember { mutableStateOf<Fruit?>(null) }
 
     Scaffold(
+
         topBar = { TopBar(navController) },
-        bottomBar = { BottomNavigationBar(navController) }
+        bottomBar = { BottomNavigationBar(navController) },
+        modifier = Modifier.background(Color.Transparent)
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Route.Home.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Route.Home.route) {
-                CharacterList(
-                    viewModel = viewModel,
-                    favoritesViewModel = favoritesViewModel,
-                    onCharacterClick = { character ->
-                        selectedFruit = character.fruit
-                        navController.navigate(Route.FruitDetail.route)
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                modifier = Modifier.fillMaxSize(),
+                painter = painterResource(id = R.drawable.onepiece_bg),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                alpha = 0.5f
+            )
+
+            NavHost(
+                navController = navController,
+                startDestination = Route.Home.route,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable(Route.Home.route) {
+                    CharacterList(
+                        viewModel = viewModel,
+                        favoritesViewModel = favoritesViewModel,
+                        onCharacterClick = { character ->
+                            selectedFruit = character.fruit
+                            navController.navigate(Route.FruitDetail.route)
+                        }
+                    )
+                }
+                composable(Route.Favorites.route) {
+                    FavoritesScreen(favoritesViewModel)
+                }
+                composable(Route.FruitDetail.route) {
+                    selectedFruit?.let { fruit ->
+                        FruitDetailScreen(fruit)
                     }
-                )
-            }
-            composable(Route.Favorites.route) {
-                FavoritesScreen(favoritesViewModel)
-            }
-            composable(Route.FruitDetail.route) {
-                selectedFruit?.let { fruit ->
-                    FruitDetailScreen(fruit)
                 }
             }
         }
@@ -80,7 +100,7 @@ fun TopBar(navController: NavHostController) {
                 }
             }
         },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors()
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
     )
 }
 
@@ -89,7 +109,9 @@ fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(Route.Home, Route.Favorites)
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
-    NavigationBar {
+    NavigationBar (
+        containerColor = Color.Transparent
+    ) {
         items.forEach { item ->
             NavigationBarItem(
                 icon = {
