@@ -61,7 +61,9 @@ fun FavoritesScreen(viewModel: FavoritesViewModel) {
             }
         }
     ) { paddingValues ->
-        Box {
+        Box (
+            modifier = Modifier.padding(paddingValues)
+        ){
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -90,15 +92,15 @@ fun FavoritesScreen(viewModel: FavoritesViewModel) {
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(160.dp) // Einheitliche Höhe für alle Cards
+                                        .height(160.dp)
                                 )
                             }
                         }
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp), // Abstand zwischen Items
-                            contentPadding = PaddingValues(vertical = 8.dp)    // Abstand oben und unten
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(vertical = 8.dp)
                         ) {
                             items(favorites) { character ->
                                 FavoriteCharacterCard(
@@ -154,7 +156,7 @@ fun FavoriteCharacterCard(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp), // Innenabstand bleibt bestehen für Layout
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
